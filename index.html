@@ -1,0 +1,36 @@
+<html>
+	<head>
+		<title>Google Reverse Search for mobile</title>
+		
+		<meta name="viewport" content="width=device-width, user-scalable=no">
+		<meta charset="utf-8">
+		
+		<link rel="stylesheet" href="index.css">
+	</head>
+	
+	<body>
+		<h1>Google Reverse Search</h1>
+		<form action="https://www.google.com/searchbyimage/upload" method="post" target="_blank" enctype="multipart/form-data">
+			<div>
+				<label for="file">Select file</label>
+				<input id="file" type="file" accept="image/*" name="encoded_image" hidden>
+				<span>Choose file or enter URL below</span>
+			</div>
+			<div>
+				<input id="url" type="text" name="image_url" placeholder="Enter URL here or choose file above">
+				<button>Search</button>
+			</div>
+		</form>
+		
+		<script>
+			var $filename = document.querySelector('span'),
+			    $file     = document.querySelector('#file'),
+			    
+			    FILE_HINT = $filename.innerText;
+			
+			$file.addEventListener('change', function () {
+				$filename.innerText = this.files[0] ? this.files[0].name : FILE_HINT;
+			});
+		</script>
+	</body>
+</html>
