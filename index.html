@@ -1,39 +1,48 @@
 <html>
 
-<head>
-	<title>Google Reverse Search for mobile</title>
+<head lang="en">
+	<title>Google Reverse Search</title>
 
-	<meta name="viewport" content="width=device-width, user-scalable=no">
+	<meta name="viewport" content="width = device-width, user-scalable = no">
 	<meta charset="utf-8">
+
+	<meta property="og:title" content="Google Reverse Search">
+	<meta property="og:locale" content="en_US">
+	<meta name="description"
+		content="Google image search wrap helpful for mobile, because Google for some reason still doesn't allow you to reverse search on mobile">
+	<meta property="og:description"
+		content="Google image search wrap helpful for mobile, because Google for some reason still doesn't allow you to reverse search on mobile">
+
+	<meta name="keywords" content="google, image search, reverse search">
 
 	<link rel="stylesheet" href="index.css">
 </head>
 
 <body>
-	<h1>Google Reverse Search</h1>
-	<form action="https://www.google.com/searchbyimage/upload" method="post" target="_blank"
-		enctype="multipart/form-data">
-		<div>
-			<label for="file">Select file</label>
-			<input id="file" type="file" accept="image/*" name="encoded_image" hidden>
-			<span>Choose file or enter URL below</span>
+	<main>
+		<h1>Google Reverse Search</h1>
+
+		<form id="google-search-form" action="https://www.google.com/searchbyimage/upload" method="post" target="_blank"
+			enctype="multipart/form-data" hidden>
+			<input id="encoded-image" type="file" name="encoded_image">
+		</form>
+
+		<div id="visual-form">
+			<img id="image-preview" src="" alt="Image preview">
+
+			<div id="info" hidden></div>
+
+			<h6>Choose file ...</h6>
+			<input id="file-input" type="file" accept="image/*">
+
+			<h6>... or enter URL</h6>
+			<input id="url-input" type="url" placeholder="https://example.com/image.png">
+
+			<button type="submit" form="google-search-form">Search</button>
 		</div>
-		<div>
-			<input id="url" type="text" name="image_url" placeholder="Enter URL here or choose file above">
-			<button>Search</button>
-		</div>
-	</form>
+	</main>
 
-	<script>
-		var $filename = document.querySelector("span"),
-			$file = document.querySelector("#file"),
-
-			FILE_HINT = $filename.innerText;
-
-		$file.addEventListener("change", function () {
-			$filename.innerText = this.files[0] ? this.files[0].name : FILE_HINT;
-		});
-	</script>
+	<script src="index.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,24 @@
+{
+    "name": "googlereverse",
+    "version": "1.0.0",
+    "description": "Google reverse search wrap",
+    "private": true,
+    "scripts": {
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start": "browser-sync -sw"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/keupoz/GoogleReverse.git"
+    },
+    "author": "keupoz",
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/keupoz/GoogleReverse/issues"
+    },
+    "homepage": "https://github.com/keupoz/GoogleReverse#readme",
+    "devDependencies": {
+        "@keupoz/typescript-config": "^1.1.8",
+        "browser-sync": "^2.26.14"
+    }
+}
