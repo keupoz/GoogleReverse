@@ -22,25 +22,28 @@
 	<main>
 		<h1>Google Reverse Search</h1>
 
-		<form id="google-search-form" action="https://www.google.com/searchbyimage/upload" method="post" target="_blank"
-			enctype="multipart/form-data" hidden>
-			<input id="encoded-image" type="file" name="encoded_image">
-		</form>
+		<img id="image-preview" src="" alt="Image preview">
 
 		<div id="visual-form">
-			<img id="image-preview" src="" alt="Image preview">
-
 			<div id="info" hidden></div>
 
 			<h6>Choose file ...</h6>
-			<input id="file-input" type="file" accept="image/*">
+
+			<form id="file-form" action="https://www.google.com/searchbyimage/upload" method="post" target="_blank"
+				enctype="multipart/form-data">
+				<input id="file-input" type="file" accept="image/*" name="encoded_image">
+			</form>
 
 			<h6>... or enter URL</h6>
-			<input id="url-input" type="url" placeholder="https://example.com/image.png">
+
+			<form id="url-form" action="https://www.google.com/searchbyimage" method="get" target="_blank"
+				enctype="application/x-www-form-urlencoded">
+				<input id="url-input" type="url" name="image_url" placeholder="https://example.com/image.png">
+			</form>
 
 			<h6>You can also paste or drop your image to load</h6>
 
-			<button type="submit" form="google-search-form">Search</button>
+			<button id="submit" type="button">Search</button>
 		</div>
 	</main>
 

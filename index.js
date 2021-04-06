@@ -1,23 +1,20 @@
-const $form = document.getElementById("google-search-form"),
-    $formImage = document.getElementById("encoded-image");
-
-const $info = document.getElementById("info"),
+const $fileForm = document.getElementById("file-form"),
+    $urlForm = document.getElementById("url-form"),
     $imagePreview = document.getElementById("image-preview"),
+    $info = document.getElementById("info"),
     $fileInput = document.getElementById("file-input"),
-    $urlInput = document.getElementById("url-input");
+    $urlInput = document.getElementById("url-input"),
+    $submit = document.getElementById("submit");
 
-if (!($form instanceof HTMLFormElement)) throw new TypeError("$form is not form");
-if (!($formImage instanceof HTMLInputElement)) throw new TypeError("$formImage is not input");
-
-if (!($info instanceof HTMLDivElement)) throw new TypeError("$info is not div");
+if (!($fileForm instanceof HTMLFormElement)) throw new TypeError("$fileForm is not form");
+if (!($urlForm instanceof HTMLFormElement)) throw new TypeError("$urlForm is not form");
 if (!($imagePreview instanceof HTMLImageElement)) throw new TypeError("$imagePreview is not image");
+if (!($info instanceof HTMLDivElement)) throw new TypeError("$info is not div");
 if (!($fileInput instanceof HTMLInputElement)) throw new TypeError("$fileInput is not input");
 if (!($urlInput instanceof HTMLInputElement)) throw new TypeError("$urlInput is not input");
+if (!($submit instanceof HTMLButtonElement)) throw new TypeError("$submit is not button");
 
 const imageHelper = new Image();
-
-/** @type {File | null} */
-let imageFile = null;
 
 /**
  * @param {string} msg
@@ -41,17 +38,6 @@ const clearInfo = () => {
 };
 
 /**
- * @param {HTMLInputElement} input
- * @param {File} file
- */
-const setFileValue = (input, file) => {
-    const dt = new DataTransfer();
-    dt.items.add(file);
-
-    input.files = dt.files;
-};
-
-/**
  * @param {File | string} value
  */
 const setValue = (value) => {
@@ -59,30 +45,26 @@ const setValue = (value) => {
         $fileInput.value = "";
         $urlInput.value = value;
     } else {
-        setFileValue($fileInput, value);
+        const dt = new DataTransfer();
+        dt.items.add(value);
+
+        $fileInput.files = dt.files;
         $urlInput.value = "";
     }
 };
 
 /**
- * @param {string} url
+ * @param {File | string} src
  */
-const fetchImage = async (url) => {
-    const r = await fetch(url),
-        blob = await r.blob();
+const loadImage = (src) => {
+    if (typeof src === "string" && src.startsWith("blob:")) return;
 
-    $fileInput.value = "";
-    loadImage(new File([blob], "search-image"));
-};
-
-/**
- * @param {File} file
- */
-const loadImage = (file) => {
     showInfo("Loading image preview ...");
+    setValue(src);
 
-    imageFile = file;
-    imageHelper.src = URL.createObjectURL(file);
+    imageHelper.src = typeof src === "string"
+        ? src
+        : URL.createObjectURL(src);
 };
 
 /**
@@ -92,20 +74,34 @@ const loadDataTransfer = (dt) => {
     const file = dt.files.item(0);
 
     if (file !== null) {
-        setValue(file);
         loadImage(file);
 
         return;
     }
 
+    let url, text;
+
     for (const item of Array.from(dt.items)) {
-        if (item.kind === "string" && item.type === "text/plain") {
-            item.getAsString((string) => {
-                setValue(string);
-                fetchImage(string);
-            });
+        if (item.kind === "string") {
+            if (item.type === "text/uri-list") {
+                url = item;
+
+                break;
+            }
+
+            if (item.type === "text/plain") {
+                if (text === undefined) text = item;
+            }
         }
     }
+
+    if (url === undefined) {
+        if (text === undefined) return;
+
+        url = text;
+    }
+
+    url.getAsString(loadImage);
 };
 
 imageHelper.addEventListener("load", () => {
@@ -129,7 +125,6 @@ $fileInput.addEventListener("change", () => {
 
     if (file === null) return;
 
-    $urlInput.value = "";
     loadImage(file);
 });
 
@@ -140,22 +135,25 @@ $urlInput.addEventListener("change", () => {
 
     if ($urlInput.value === "") return;
 
-    fetchImage(value);
+    loadImage(value);
 });
 
 $urlInput.addEventListener("paste", (e) => {
     e.stopPropagation();
 });
 
-$form.addEventListener("submit", (e) => {
-    if (imageFile === null) {
-        e.preventDefault();
-        showInfo("No valid image provided", true);
+$submit.addEventListener("click", (e) => {
+    e.preventDefault();
 
-        return;
-    }
+    if ($fileInput.files === null) throw new Error("Can't access files property");
 
-    setFileValue($formImage, imageFile);
+    const isFileValid = $fileInput.files.item(0) !== null,
+        isUrlValid = $urlInput.validity.valid && $urlInput.value.trim() !== "";
+
+    if (isFileValid) return $fileForm.submit();
+    if (isUrlValid) return $urlForm.submit();
+
+    showInfo("No valid image provided", true);
 });
 
 document.addEventListener("paste", (e) => {
