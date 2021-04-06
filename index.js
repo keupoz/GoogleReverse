@@ -41,6 +41,41 @@ const clearInfo = () => {
 };
 
 /**
+ * @param {HTMLInputElement} input
+ * @param {File} file
+ */
+const setFileValue = (input, file) => {
+    const dt = new DataTransfer();
+    dt.items.add(file);
+
+    input.files = dt.files;
+};
+
+/**
+ * @param {File | string} value
+ */
+const setValue = (value) => {
+    if (typeof value === "string") {
+        $fileInput.value = "";
+        $urlInput.value = value;
+    } else {
+        setFileValue($fileInput, value);
+        $urlInput.value = "";
+    }
+};
+
+/**
+ * @param {string} url
+ */
+const fetchImage = async (url) => {
+    const r = await fetch(url),
+        blob = await r.blob();
+
+    $fileInput.value = "";
+    loadImage(new File([blob], "search-image"));
+};
+
+/**
  * @param {File} file
  */
 const loadImage = (file) => {
@@ -48,6 +83,29 @@ const loadImage = (file) => {
 
     imageFile = file;
     imageHelper.src = URL.createObjectURL(file);
+};
+
+/**
+ * @param {DataTransfer} dt
+ */
+const loadDataTransfer = (dt) => {
+    const file = dt.files.item(0);
+
+    if (file !== null) {
+        setValue(file);
+        loadImage(file);
+
+        return;
+    }
+
+    for (const item of Array.from(dt.items)) {
+        if (item.kind === "string" && item.type === "text/plain") {
+            item.getAsString((string) => {
+                setValue(string);
+                fetchImage(string);
+            });
+        }
+    }
 };
 
 imageHelper.addEventListener("load", () => {
@@ -82,12 +140,11 @@ $urlInput.addEventListener("change", () => {
 
     if ($urlInput.value === "") return;
 
-    fetch(value)
-        .then((r) => r.blob())
-        .then((blob) => {
-            $fileInput.value = "";
-            loadImage(new File([blob], "search-image"));
-        });
+    fetchImage(value);
+});
+
+$urlInput.addEventListener("paste", (e) => {
+    e.stopPropagation();
 });
 
 $form.addEventListener("submit", (e) => {
@@ -98,7 +155,25 @@ $form.addEventListener("submit", (e) => {
         return;
     }
 
-    const dt = new DataTransfer();
-    dt.items.add(imageFile);
-    $formImage.files = dt.files;
+    setFileValue($formImage, imageFile);
+});
+
+document.addEventListener("paste", (e) => {
+    if (e.clipboardData === null) return;
+
+    e.preventDefault();
+
+    loadDataTransfer(e.clipboardData);
+});
+
+document.addEventListener("dragover", (e) => {
+    e.preventDefault();
+});
+
+document.addEventListener("drop", (e) => {
+    if (e.dataTransfer === null) return;
+
+    e.preventDefault();
+
+    loadDataTransfer(e.dataTransfer);
 });
