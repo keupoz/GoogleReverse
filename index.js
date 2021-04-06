@@ -14,7 +14,11 @@ if (!($fileInput instanceof HTMLInputElement)) throw new TypeError("$fileInput i
 if (!($urlInput instanceof HTMLInputElement)) throw new TypeError("$urlInput is not input");
 if (!($submit instanceof HTMLButtonElement)) throw new TypeError("$submit is not button");
 
-const imageHelper = new Image();
+const FILE_TYPE_REGEX = /^image\/(jpeg|gif|png|bmp|tiff|webp)/,
+    imageHelper = new Image(),
+    urlInputHelper = document.createElement("input");
+
+urlInputHelper.type = "url";
 
 /**
  * @param {string} msg
@@ -54,17 +58,45 @@ const setValue = (value) => {
 };
 
 /**
+ * @param {string} url
+ */
+const getUrl = (url) => {
+    try {
+        return new URL(url);
+    } catch {
+        return null;
+    }
+};
+
+/**
  * @param {File | string} src
  */
 const loadImage = (src) => {
-    if (typeof src === "string" && src.startsWith("blob:")) return;
-
     showInfo("Loading image preview ...");
-    setValue(src);
 
-    imageHelper.src = typeof src === "string"
-        ? src
-        : URL.createObjectURL(src);
+    let url;
+
+    if (typeof src === "string") {
+        const urlParsed = getUrl(src);
+
+        if (urlParsed === null) return showInfo("Invalid URL", true);
+        if (urlParsed.protocol === "blob:") return showInfo("Blob URLs are not allowed", true);
+
+        url = urlParsed.href;
+    } else if (src instanceof File) {
+        if (!FILE_TYPE_REGEX.test(src.type)) {
+            showInfo("File must be either JPEG, GIF, PNG, BMP, TIF or WebP", true);
+
+            return;
+        }
+
+        url = URL.createObjectURL(src);
+    }
+
+    if (url === undefined) return showInfo("Couldn't recognize resource type", true);
+
+    setValue(src);
+    imageHelper.src = url;
 };
 
 /**
